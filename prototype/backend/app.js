@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 
 const db = require('./database');
@@ -16,9 +18,13 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Data retention policy
+const RETENTION_DAYS = 180; // TODO: Implement auto-purge in TRL-6
+
 // Middleware
+app.use(helmet());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
 }));
 
@@ -27,12 +33,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
 app.use(session({
-  secret: 'ai-gp-prototype-secret-key',
+  secret: process.env.SESSION_SECRET || 'dev-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: false, // Set to true in production with HTTPS
     httpOnly: true,
+    sameSite: 'lax',
     maxAge: 60 * 60 * 1000 // 1 hour
   }
 }));
@@ -42,6 +49,50 @@ app.use(session({
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Version endpoint
+app.get('/api/version', (req, res) => {
+  res.json({ version: '0.1-prototype' });
+});
+
+// OpenAPI spec stub
+app.get('/api/openapi.json', (req, res) => {
+  res.json({ planned: true, message: 'OpenAPI specification coming soon' });
+});
+
+// Public metrics (no authentication required)
+app.get('/api/public/metrics', async (req, res) => {
+  try {
+    const stats = await db.all(`
+      SELECT
+        triage_level,
+        status,
+        COUNT(*) as count
+      FROM cases
+      GROUP BY triage_level, status
+    `);
+
+    const summary = {
+      total: 0,
+      red: 0,
+      yellow: 0,
+      green: 0,
+      pending: 0,
+      resolved: 0
+    };
+
+    stats.forEach(stat => {
+      summary.total += stat.count;
+      summary[stat.triage_level.toLowerCase()] += stat.count;
+      summary[stat.status] += stat.count;
+    });
+
+    res.json(summary);
+  } catch (error) {
+    console.error('Public metrics error:', error);
+    res.status(500).json({ error: 'Failed to retrieve metrics' });
+  }
 });
 
 // Authentication routes

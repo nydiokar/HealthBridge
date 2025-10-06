@@ -83,7 +83,11 @@ const SubmissionForm = () => {
 
           <div className="next-steps">
             <h3>What happens next?</h3>
-            <p>Your case has been reviewed and prioritized. A healthcare professional will contact you based on the urgency level.</p>
+            <p>Your case has been reviewed and prioritized. A healthcare professional may contact you based on the urgency level.</p>
+            
+            <div className="medical-disclaimer">
+              <p><strong>⚠️ Important:</strong> This is advisory only, not a medical diagnosis. In an emergency, call 112.</p>
+            </div>
 
             {result.triage_level === 'RED' && (
               <div className="urgent-notice">
