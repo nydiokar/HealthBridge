@@ -114,6 +114,14 @@ app.post('/api/submit-case', authenticateUser, requireRole('citizen'), async (re
       });
     }
 
+    // Check consent
+    if (!caseData.consent) {
+      return res.status(400).json({
+        error: 'Consent required',
+        details: ['Please provide consent to process your health data']
+      });
+    }
+
     // Generate IDs
     const caseId = db.generateCaseId();
     const patientId = db.generatePatientId();

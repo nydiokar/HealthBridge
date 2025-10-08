@@ -764,6 +764,21 @@ body {
   border-color: #3498db;
 }
 
+/* Consent Checkbox */
+.consent-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  margin: 15px 0;
+}
+
+.consent-checkbox input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1.1);
+}
+
 /* Error Messages */
 .error-message {
   background: #ffebee;

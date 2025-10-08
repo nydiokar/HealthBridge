@@ -8,7 +8,8 @@ const SubmissionForm = () => {
     fever: false,
     temperature: '',
     pain_level: 0,
-    allergies: ''
+    allergies: '',
+    consent: false
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -58,7 +59,8 @@ const SubmissionForm = () => {
       fever: false,
       temperature: '',
       pain_level: 0,
-      allergies: ''
+      allergies: '',
+      consent: false
     });
     setSubmitted(false);
     setResult(null);
@@ -227,9 +229,22 @@ const SubmissionForm = () => {
 
           {error && <div className="error-message">{error}</div>}
 
+          <div className="form-group">
+            <label className="consent-checkbox">
+              <input
+                type="checkbox"
+                name="consent"
+                checked={formData.consent}
+                onChange={handleChange}
+                required
+              />
+              I consent to processing my health data for triage purposes
+            </label>
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !formData.consent}
             className="submit-btn"
           >
             {loading ? 'Submitting...' : 'Submit Health Concern'}
